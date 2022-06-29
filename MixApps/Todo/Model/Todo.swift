@@ -12,7 +12,7 @@ class Todo: Codable {
     var desc: String
     var isDone: Bool
 
-    init(){
+    init() {
         self.title = ""
         self.desc = ""
         self.isDone = false
@@ -24,7 +24,7 @@ class Todo: Codable {
         self.isDone = isDone
     }
 }
-extension Todo: Equatable{
+extension Todo: Equatable {
     static func == (lhs: Todo, rhs: Todo) -> Bool {
         lhs.title == rhs.title  &&
         lhs.desc == rhs.desc &&

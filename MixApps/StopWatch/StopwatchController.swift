@@ -83,6 +83,7 @@ class StopwatchController: UIViewController {
             [playButton, stopButton, pauseButton].forEach { $0?.bool = isGoingOn}
         }
     }
+    
     private var isTimer = true
     private var timer: Timer = Timer()
     private var count: Int = 0
@@ -153,7 +154,7 @@ class StopwatchController: UIViewController {
     
     @objc func segmentClick() {
         isTimer = segmentedControl.selectedSegmentIndex == 0
-        picker.isHidden = segmentedControl.selectedSegmentIndex == 0
+        picker.isHidden = isTimer
         reset()
     }
     
@@ -174,13 +175,15 @@ class StopwatchController: UIViewController {
             return
         }
         toggle()
-        timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(updateTimer), userInfo: nil, repeats: true)
-        if !isTimer {
-            picker.isHidden = true
-        }
+        timer = Timer.scheduledTimer(timeInterval: 1,
+                                     target: self,
+                                     selector: #selector(updateTimer),
+                                     userInfo: nil,
+                                     repeats: true)
+        picker.isHidden = isTimer
     }
     
-    @objc func updateTimer() -> Void{
+    @objc func updateTimer() -> Void {
         if count == 0 && !isTimer {
             UIDevice.vibrate()
             reset()
@@ -190,7 +193,7 @@ class StopwatchController: UIViewController {
         timerLabel.text = secondsToString(seconds: count)
     }
     
-    func reset(){
+    func reset() {
         isGoingOn = false
         timerLabel.text = "00:00:00"
         timer.invalidate()
@@ -204,14 +207,14 @@ class StopwatchController: UIViewController {
         
         if !isTimer {
             picker.isHidden = false
-            picker.selectRow(0, inComponent:0, animated: true)
-            picker.selectRow(0, inComponent:1, animated: true)
-            picker.selectRow(0, inComponent:2, animated: true)
+            picker.selectRow(0, inComponent: 0, animated: true)
+            picker.selectRow(0, inComponent: 1, animated: true)
+            picker.selectRow(0, inComponent: 2, animated: true)
         }
     }
     
    
-    func secondsToString(seconds: Int) -> (String){
+    func secondsToString(seconds: Int) -> (String) {
         var timeStr = ""
         timeStr.append( String(format: "%02d", (seconds/3600)) + ":")
         timeStr.append( String(format: "%02d", (seconds%3600)/60) + ":")
@@ -220,7 +223,7 @@ class StopwatchController: UIViewController {
         return timeStr
     }
     
-    private func toggle(){
+    private func toggle() {
         isGoingOn.toggle()
         playButton.bool = isGoingOn
         pauseButton.bool = !isGoingOn

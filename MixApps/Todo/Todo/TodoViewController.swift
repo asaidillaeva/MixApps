@@ -9,7 +9,6 @@ import UIKit
 
 class TodoViewController: UIViewController {
     
-    var defaults: TodoDefaults = .init()
     
     private let tableView: UITableView = {
         let view = UITableView()
@@ -23,7 +22,7 @@ class TodoViewController: UIViewController {
         view.setBackgroundImage(UIImage(systemName: "plus.circle.fill"), for: .normal)
         view.tintColor = .systemBlue
         view.translatesAutoresizingMaskIntoConstraints = false
-        view.addTarget(self, action: #selector(add), for: .touchUpInside)
+        view.addTarget(self, action: #selector(buttonTapped(_:)), for: .touchUpInside)
         
         return view
     }()
@@ -33,30 +32,32 @@ class TodoViewController: UIViewController {
         view.setBackgroundImage(UIImage(systemName: "pencil.circle.fill"), for: .normal)
         view.tintColor = .systemGreen
         view.translatesAutoresizingMaskIntoConstraints = false
-        view.addTarget(self, action: #selector(edit), for: .touchUpInside)
+        view.addTarget(self, action: #selector(buttonTapped(_:)), for: .touchUpInside)
         
         return view
     }()
     
     private let searchController = UISearchController(searchResultsController: nil)
     
-    private var filteredTodo: [Todo] = []
-    
-    private var tableData: [Todo]{
-        isFiltering ? filteredTodo : defaults.data
-    }
-    
     private var isEmptySearchBar: Bool {
         guard let text = searchController.searchBar.text else {return false}
         return text.isEmpty
     }
     
-    private var isFiltering: Bool {
-        return searchController.isActive && !isEmptySearchBar
+    private var viewModel: ITodoViewModel
+    
+    init(vm: ITodoViewModel = TodoViewModel()) {
+        viewModel = vm
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        viewModel.isFiltering = searchController.isActive && !isEmptySearchBar
         tableView.delegate = self
         tableView.dataSource = self
         setup()
@@ -71,20 +72,26 @@ class TodoViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        if tableData.count == 0 {
+        if viewModel.data.count == 0 {
             animate()
         }
     }
     
-    @objc
-    func add(){
+    @objc func buttonTapped(_ sender: UIButton) {
+        if sender === addButton {
+            add()
+        } else if sender === editButton {
+            edit()
+        }
+    }
+    
+    func add() {
         let detailsViewController = DetailsViewController()
         detailsViewController.delegate = self
         navigationController?.pushViewController(detailsViewController, animated: true)
     }
     
-    @objc
-    func edit(){
+    func edit() {
         tableView.isEditing.toggle()
         if tableView.isEditing {
             addButton.isHidden = true
@@ -102,27 +109,6 @@ class TodoViewController: UIViewController {
         setupConstraints()
     }
     
-    //    let width = view.frame.width
-    //    addButton.transform = .init(translationX: -width , y: 0)
-    //    addButton.alpha = 0
-    //    UIView.animateKeyframes(withDuration: 1, delay: 0) {
-    //        UIView.addKeyframe(withRelativeStartTime: 0, relativeDuration: 1/2) {
-    //            var transform = self.addButton.transform
-    //            transform = transform.translatedBy(x: width/2, y: 0)
-    //            self.addButton.transform = transform
-    //            self.addButton.alpha = 1/2
-    //        }
-    //        UIView.addKeyframe(withRelativeStartTime: 1/2, relativeDuration: 1/2) {
-    //            var transform = self.addButton.transform
-    //            transform = transform.translatedBy(x: width/2, y: 0)
-    //            self.addButton.transform = transform
-    //            self.addButton.alpha = 1
-    //        }
-    //    } completion: { _ in
-    //        self.addButton.transform = .identity
-    //        self.addButton.alpha = 1
-    //    }
-    //
     private func setupSubviews() {
         view.addSubview(tableView)
         view.addSubview(addButton)
@@ -131,6 +117,7 @@ class TodoViewController: UIViewController {
         navigationItem.title = "Список задач"
         navigationController?.navigationBar.prefersLargeTitles = true
     }
+    
     private lazy var addButtonTrailingConstraint: NSLayoutConstraint = {
         addButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -25)
     }()
@@ -181,7 +168,7 @@ extension TodoViewController: UITableViewDelegate, UITableViewDataSource{
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: TodoCell.identifier, for: indexPath) as! TodoCell
-        cell.setTodo(tableData[indexPath.row])
+        cell.setTodo( viewModel.data[indexPath.row] )
         cell.delegate = self
         cell.tappedIndex = indexPath.row
         return cell
@@ -189,16 +176,13 @@ extension TodoViewController: UITableViewDelegate, UITableViewDataSource{
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if let cell = tableView.cellForRow(at: indexPath) as? TodoCell{
-            let item = tableData[indexPath.row]
-            item.isDone.toggle()
-            defaults.update(todo: item)
-            cell.cellSelected(isSelected: item.isDone)
+            cell.cellSelected(isSelected: viewModel.update(index: indexPath.row).isDone)
         }
         tableView.deselectRow(at: indexPath, animated: true)
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        tableData.count
+        viewModel.data.count
     }
     
     func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
@@ -206,8 +190,7 @@ extension TodoViewController: UITableViewDelegate, UITableViewDataSource{
     }
     
     func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
-        let item = defaults.remove(index: sourceIndexPath.row)
-        defaults.insert(todo: item, index: destinationIndexPath.row)
+        viewModel.changeOrder(sourceIndex: sourceIndexPath.row, destinationIndex: destinationIndexPath.row)
         tableView.reloadData()
     }
     
@@ -217,17 +200,13 @@ extension TodoViewController: UITableViewDelegate, UITableViewDataSource{
     
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
-            let todo: Todo = tableData[indexPath.row]
-            defaults.remove(todo: todo)
-            if let index = filteredTodo.firstIndex(of: todo) {
-                filteredTodo.remove(at: index)
-            }
+            viewModel.remove(at: indexPath.row)
             tableView.beginUpdates()
             tableView.deleteRows(at: [indexPath], with: .automatic)
             tableView.endUpdates()
             
         } else if editingStyle == .insert {
-            let rowIndex = tableData.count - 1
+            let rowIndex = viewModel.data.count - 1
             let indexPath = IndexPath(row: rowIndex, section: 0)
             tableView.beginUpdates()
             tableView.insertRows(at:  [indexPath], with: .left)
@@ -240,7 +219,7 @@ extension TodoViewController: UITableViewDelegate, UITableViewDataSource{
             return
         }
         let detailsViewController = DetailsViewController()
-        let item = tableData[indexPath.row]
+        let item = viewModel.data[indexPath.row]
         detailsViewController.itemToEdit = item
         detailsViewController.delegate = self
         navigationController?.pushViewController(detailsViewController, animated: true)
@@ -250,12 +229,14 @@ extension TodoViewController: UITableViewDelegate, UITableViewDataSource{
 
 extension TodoViewController: UISearchBarDelegate {
     func searchBarTextDidBeginEditing(_ searchBar: UISearchBar) {
+        viewModel.isFiltering = true
         [addButton, editButton].forEach { button in
             button.isHidden = true
         }
     }
     
     func searchBarTextDidEndEditing(_ searchBar: UISearchBar) {
+        viewModel.isFiltering = false
         [addButton, editButton].forEach { button in
             button.isHidden = false
         }
@@ -264,19 +245,19 @@ extension TodoViewController: UISearchBarDelegate {
 
 extension TodoViewController: DetailViewControllerDelegate {
     
-    func detailViewController(_ controller: DetailsViewController, edited item: Todo) {
-        if let index = tableData.firstIndex(of: item){
+    func detailViewController(edited item: Todo) {
+        if let index = viewModel.data.firstIndex(of: item){
             let indexPath = IndexPath(row: index, section: 0)
-            if let cell = tableView.cellForRow(at: indexPath) as? TodoCell{
+            if let cell = tableView.cellForRow(at: indexPath) as? TodoCell {
                 cell.setTodo(item)
             }
             navigationController?.popViewController(animated: true)
         }
     }
     
-    func detailViewController(_ controller: DetailsViewController, added item: Todo) {
-        defaults.updateList()
-        let rowIndex = tableData.count - 1
+    func detailViewController(added item: Todo) {
+        viewModel.updateDefaultsList()
+        let rowIndex = viewModel.data.count - 1
         let indexPath = IndexPath(row: rowIndex, section: 0)
         tableView.beginUpdates()
         tableView.insertRows(at:  [indexPath], with: .left)
@@ -284,21 +265,18 @@ extension TodoViewController: DetailViewControllerDelegate {
     }
 }
 
-extension TodoViewController: TodoCellDelegate{
+extension TodoViewController: TodoCellDelegate {
     func didTapCheckMark(index: Int) {
-        if let cell: TodoCell = tableView.cellForRow(at: IndexPath(row: index, section: 0)) as? TodoCell{
-            let item = tableData[index]
-            item.isDone.toggle()
-            defaults.update(todo: item)
-            cell.cellSelected(isSelected: item.isDone)
+        if let cell: TodoCell = tableView.cellForRow(at: IndexPath(row: index, section: 0)) as? TodoCell {
+            cell.cellSelected(isSelected: viewModel.update(index: index).isDone)
         }
     }
 }
 
-extension TodoViewController: UISearchResultsUpdating{
+extension TodoViewController: UISearchResultsUpdating {
     func updateSearchResults(for searchController: UISearchController) {
-        filteredTodo = defaults.data.filter({ (todo: Todo) -> Bool in
-            return  todo.title.lowercased().contains(searchController.searchBar.text?.lowercased() ?? "")})
+        
+        viewModel.updateDataByTitle(title: searchController.searchBar.text?.lowercased() ?? "" )
         tableView.reloadData()
     }
 }

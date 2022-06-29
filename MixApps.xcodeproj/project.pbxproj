@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C700C0C8286CA02100AF0913 /* TodoViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C700C0C7286CA02100AF0913 /* TodoViewModel.swift */; };
 		C7BF70382867689800D865A8 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7BF70372867689800D865A8 /* AppDelegate.swift */; };
 		C7BF703A2867689800D865A8 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7BF70392867689800D865A8 /* SceneDelegate.swift */; };
 		C7BF70412867689900D865A8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C7BF70402867689900D865A8 /* Assets.xcassets */; };
@@ -21,6 +22,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		C700C0C7286CA02100AF0913 /* TodoViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoViewModel.swift; sourceTree = "<group>"; };
 		C7BF70342867689800D865A8 /* MixApps.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MixApps.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C7BF70372867689800D865A8 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		C7BF70392867689800D865A8 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -47,6 +49,41 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		C700C0C5286C9FEE00AF0913 /* Details */ = {
+			isa = PBXGroup;
+			children = (
+				C7BF705128676A6800D865A8 /* DetailsViewController.swift */,
+			);
+			path = Details;
+			sourceTree = "<group>";
+		};
+		C700C0CB286CA17C00AF0913 /* Todo */ = {
+			isa = PBXGroup;
+			children = (
+				C7BF704B286769C800D865A8 /* TodoViewController.swift */,
+				C700C0C7286CA02100AF0913 /* TodoViewModel.swift */,
+				C700C0CC286CA19D00AF0913 /* Views */,
+			);
+			path = Todo;
+			sourceTree = "<group>";
+		};
+		C700C0CC286CA19D00AF0913 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				C7BF705628676AB800D865A8 /* TodoCell.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		C700C0CD286CB19200AF0913 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				C7BF705428676AA400D865A8 /* Todo.swift */,
+				C7BF705828676ACD00D865A8 /* TodoDefaults.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
 		C7BF702B2867689800D865A8 = {
 			isa = PBXGroup;
 			children = (
@@ -69,7 +106,8 @@
 				C7BF70372867689800D865A8 /* AppDelegate.swift */,
 				C7BF70392867689800D865A8 /* SceneDelegate.swift */,
 				C7BF705B28676F7400D865A8 /* TabBarController.swift */,
-				C7BF704D286769E000D865A8 /* Apps */,
+				C7BF705A28676B1200D865A8 /* StopWatch */,
+				C7BF705028676A0600D865A8 /* Todo */,
 				C7BF70402867689900D865A8 /* Assets.xcassets */,
 				C7BF70422867689900D865A8 /* LaunchScreen.storyboard */,
 				C7BF70452867689900D865A8 /* Info.plist */,
@@ -77,23 +115,12 @@
 			path = MixApps;
 			sourceTree = "<group>";
 		};
-		C7BF704D286769E000D865A8 /* Apps */ = {
-			isa = PBXGroup;
-			children = (
-				C7BF705A28676B1200D865A8 /* StopWatch */,
-				C7BF705028676A0600D865A8 /* Todo */,
-			);
-			path = Apps;
-			sourceTree = "<group>";
-		};
 		C7BF705028676A0600D865A8 /* Todo */ = {
 			isa = PBXGroup;
 			children = (
-				C7BF704B286769C800D865A8 /* TodoViewController.swift */,
-				C7BF705128676A6800D865A8 /* DetailsViewController.swift */,
-				C7BF705428676AA400D865A8 /* Todo.swift */,
-				C7BF705628676AB800D865A8 /* TodoCell.swift */,
-				C7BF705828676ACD00D865A8 /* TodoDefaults.swift */,
+				C700C0CB286CA17C00AF0913 /* Todo */,
+				C700C0C5286C9FEE00AF0913 /* Details */,
+				C700C0CD286CB19200AF0913 /* Model */,
 			);
 			path = Todo;
 			sourceTree = "<group>";
@@ -184,6 +211,7 @@
 				C7BF703A2867689800D865A8 /* SceneDelegate.swift in Sources */,
 				C7BF704F286769F700D865A8 /* StopwatchController.swift in Sources */,
 				C7BF705228676A6800D865A8 /* DetailsViewController.swift in Sources */,
+				C700C0C8286CA02100AF0913 /* TodoViewModel.swift in Sources */,
 				C7BF705728676AB800D865A8 /* TodoCell.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

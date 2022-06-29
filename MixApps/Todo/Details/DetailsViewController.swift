@@ -8,16 +8,25 @@ import UIKit
 
 
 protocol DetailViewControllerDelegate: AnyObject {
-    func detailViewController(_ controller: DetailsViewController, added item: Todo)
-    func detailViewController(_ controller: DetailsViewController, edited item: Todo)
+    func detailViewController(added item: Todo)
+    func detailViewController(edited item: Todo)
 }
 
 class DetailsViewController: UIViewController {
-    let defaults = TodoDefaults()
 
     public weak var itemToEdit: Todo?
     public weak var delegate: DetailViewControllerDelegate?
     
+    private var viewModel: ITodoViewModel
+    
+    init(vm: ITodoViewModel = TodoViewModel()) {
+        viewModel = vm
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     private let titleTextField: UITextField = {
         let text = UITextField()
@@ -46,7 +55,6 @@ class DetailsViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setup()
-        // Do any additional setup after loading the view.
     }
     
     private func setup(){
@@ -59,12 +67,12 @@ class DetailsViewController: UIViewController {
         self.navigationItem.rightBarButtonItem = .init(title: "Сохранить",
                                                        style: .done,
                                                        target: self,
-                                                       action: #selector(save))
+                                                       action: #selector(didTapButton(_:)))
         
         self.navigationItem.leftBarButtonItem = .init(title: "Отмена",
                                                       style: .plain,
                                                       target: self,
-                                                      action: #selector(cancel))
+                                                      action: #selector(didTapButton(_:)))
         
         if let itemToEdit = itemToEdit {
             navigationItem.title = "Редактирование"
@@ -98,11 +106,15 @@ class DetailsViewController: UIViewController {
         
     }
     
-    @objc func cancel(){
-        navigationController?.popViewController(animated: true)
+    @objc func didTapButton(_ sender: UIBarButtonItem) {
+        if sender == self.navigationItem.rightBarButtonItem {
+            save()
+        } else {
+            navigationController?.popViewController(animated: true)
+        }
     }
     
-    @objc func save(){
+    func save(){
         if titleTextField.text?.trimmingCharacters(in: .whitespacesAndNewlines) == "" {
             titleTextField.text = "Без названия"
         }
@@ -111,19 +123,17 @@ class DetailsViewController: UIViewController {
             descriptionTextField.text = "Без описания"
         }
         
-        
         if let itemToEdit = itemToEdit {
             itemToEdit.title = titleTextField.text!
             itemToEdit.desc = descriptionTextField.text!
-            delegate?.detailViewController(self, edited: itemToEdit)
+            delegate?.detailViewController(edited: itemToEdit)
         } else {
             let todo: Todo = .init(
                 titleTextField.text! ,
                 descriptionTextField.text!,
                 false)
-            defaults.save(todo: todo)
-            defaults.updateList()
-            delegate?.detailViewController(self, added: todo)
+            viewModel.save(todo: todo)
+            delegate?.detailViewController(added: todo)
             navigationController?.popViewController(animated: true)
         }
     }
